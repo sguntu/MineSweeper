@@ -3,6 +3,7 @@
 #include <vector>
 
 enum class TileState { Hidden, Revealed, Flagged };
+enum class FaceState { Happy, Win, Lose };
 
 struct Tile {
     bool isMine = false;
@@ -22,6 +23,8 @@ public:
 
     void handleClick(sf::Vector2i mousePos, sf::Mouse::Button button);
     void draw(sf::RenderWindow& window);
+    void updateTimer();
+    void resetTimer();
 
 private:
     int rows;
@@ -34,7 +37,19 @@ private:
     sf::Font font;
     sf::Texture numberTextures[9];   // index 1–8 used
 
+    // Face button & state
+    sf::Texture faceHappy, faceWin, faceLose;
+    sf::Sprite faceSprite;
+    FaceState faceState = FaceState::Happy;
+    sf::FloatRect faceBounds;
+
+    // Timer
+    sf::Clock clock;
+    int elapsedSeconds = 0;
+    bool gameOver = false;
+
     void placeMines();
     void calculateAdjacency();
     void revealTile(int r, int c);
+    bool checkWin();
 };

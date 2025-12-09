@@ -138,10 +138,12 @@ int main() {
             // =====================
             else if (state == AppState::Game) {
                 if (auto* mb = ev->getIf<sf::Event::MouseButtonPressed>()) {
-                    game->handleClick(
-                        sf::Mouse::getPosition(window),
-                        mb->button
-                    );
+                    if (game) {
+                        game->handleClick(
+                            sf::Mouse::getPosition(window),
+                            mb->button
+                        );
+                    }
                 }
             }
         }
@@ -153,7 +155,8 @@ int main() {
             window.draw(label);
             window.draw(userip);
         }
-        else {
+        else if (game) {
+            game->updateTimer();
             game->draw(window);
         }
 
