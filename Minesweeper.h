@@ -1,9 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <chrono>
 
 enum class TileState { Hidden, Revealed, Flagged };
 enum class FaceState { Happy, Win, Lose };
+enum class PlayType { Play, Pause };
 
 struct Tile {
     bool isMine = false;
@@ -23,8 +25,6 @@ public:
 
     void handleClick(sf::Vector2i mousePos, sf::Mouse::Button button);
     void draw(sf::RenderWindow& window);
-    void updateTimer();
-    void resetTimer();
 
 private:
     int rows;
@@ -39,17 +39,43 @@ private:
 
     // Face button & state
     sf::Texture faceHappy, faceWin, faceLose;
-    sf::Sprite faceSprite;
+    sf::Texture debug, play, pause, leaderboard;//, digits;
+    sf::Sprite faceSprite = sf::Sprite(faceHappy);
+    sf::Sprite debugSprite = sf::Sprite(debug);
+    sf::Sprite playTypeSprite = sf::Sprite(play);
+    //sf::Sprite pauseSprite = sf::Sprite(pause);
+    sf::Sprite leaderboardSprite = sf::Sprite(leaderboard);
+    //sf::Sprite digitSprite = sf::Sprite(digits);
+
     FaceState faceState = FaceState::Happy;
+    PlayType playType = PlayType::Play;
+
     sf::FloatRect faceBounds;
 
-    // Timer
-    sf::Clock clock;
-    int elapsedSeconds = 0;
+    //Timer
+    std::chrono::steady_clock::time_point startTime;
+    std::chrono::duration<float> elapsedTime;
+    bool timerRunning = true;
     bool gameOver = false;
+
+    std::chrono::steady_clock::time_point pausedStart;
+    std::chrono::duration<float> pausedDuration = std::chrono::seconds(0);
+    bool isPaused = false;
+
+
+    //Mines counter
+    sf::Texture minesCounter;
+    //sf::Sprite minesCounterSprite[3];
+    std::vector<sf::Sprite> minesCounterSprite;
+
 
     void placeMines();
     void calculateAdjacency();
     void revealTile(int r, int c);
-    bool checkWin();
+    void updateTimer();
+    void togglePlay();
+    void setCounter(sf::Sprite& sprite, int digit);
+
+    //bool isLeaderboardClicked(int mouseX, int mouseY) const;
+    //void displayLeaderboard();
 };

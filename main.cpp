@@ -31,7 +31,7 @@ int main() {
 
     AppState state = AppState::NameInput;
 
-    sf::Font fontFile("../font.ttf");
+    sf::Font font("../font.ttf");
     std::ifstream configFile("../config.cfg");
     if (configFile) {
         configFile >> numOfColumns >> numOfRows >> numOfMines;
@@ -42,17 +42,17 @@ int main() {
 
     sf::RenderWindow window(sf::VideoMode({width, height}), "Minesweeper");
 
-    sf::Text text(fontFile, "WELCOME TO MINESWEEPER!", 24);
+    sf::Text text(font, "WELCOME TO MINESWEEPER!", 24);
     text.setFillColor(sf::Color::White);
     setText(text, width / 2.f, height / 2.f - 150);
 
-    sf::Text label(fontFile, "Enter your name:", 20);
+    sf::Text label(font, "Enter your name:", 20);
     label.setFillColor(sf::Color::White);
     setText(label, width / 2.f, height / 2.f - 75);
 
     std::string input;
 
-    sf::Text userip(fontFile, "|", 18);
+    sf::Text userip(font, "|", 18);
     userip.setFillColor(sf::Color::White);
     setText(userip, width / 2.f, height / 2.f - 45);
 
@@ -68,12 +68,6 @@ int main() {
                 break;
             }
 
-            // =====================
-            // NAME INPUT SCREEN
-            // =====================
-            // ========================
-            // NAME INPUT SCREEN
-            // ========================
             if (state == AppState::NameInput) {
 
                 // --- Text Input ---
@@ -105,45 +99,33 @@ int main() {
                             input.push_back(letter);
                         }
                     }
-
-                    // Update text display
                     userip.setString(input + "|");
                 }
 
-                // --- Enter Key ---
                 if (auto kp = ev->getIf<sf::Event::KeyPressed>()) {
                     if (kp->code == sf::Keyboard::Key::Enter) {
 
-                        // If empty → stay here
                         if (input.empty()) {
-                            std::cout << "Name is empty - staying on name screen.\n";
                             continue;
                         }
 
-                        // Otherwise create the game window
                         window.create(
-                            sf::VideoMode({(unsigned)(numOfColumns * 32),
-                                           (unsigned)(numOfRows * 32)}),
+                            sf::VideoMode({width, height}),
                             "Minesweeper - Player: " + input
                         );
 
-                        game = new Minesweeper(numOfRows, numOfColumns, numOfMines, 32);
+                        game = new Minesweeper(numOfRows, numOfColumns, numOfMines);
                         state = AppState::Game;
                     }
                 }
             }
 
-            // =====================
-            // GAME SCREEN
-            // =====================
             else if (state == AppState::Game) {
                 if (auto* mb = ev->getIf<sf::Event::MouseButtonPressed>()) {
-                    if (game) {
-                        game->handleClick(
-                            sf::Mouse::getPosition(window),
-                            mb->button
-                        );
-                    }
+                    game->handleClick(
+                        sf::Mouse::getPosition(window),
+                        mb->button
+                    );
                 }
             }
         }
@@ -155,8 +137,7 @@ int main() {
             window.draw(label);
             window.draw(userip);
         }
-        else if (game) {
-            game->updateTimer();
+        else {
             game->draw(window);
         }
 
