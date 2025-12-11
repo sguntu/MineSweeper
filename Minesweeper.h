@@ -23,7 +23,7 @@ class Minesweeper {
 public:
     Minesweeper(int rows, int cols, int numMines, int tileSize = 32);
 
-    void handleClick(sf::Vector2i mousePos, sf::Mouse::Button button, sf::RenderWindow& window);
+    void handleClick(sf::Vector2i mousePos, sf::Mouse::Button button, sf::String playerName);
     void draw(sf::RenderWindow& window);
 
     void displayLeaderboard();
@@ -32,6 +32,7 @@ private:
     int cols;
     int numMines;
     int tileSize;
+    int winnerTime;
 
     std::vector<std::vector<Tile>> grid;
     sf::Texture texHidden, texRevealed, texMine, texFlag;
@@ -44,34 +45,43 @@ private:
     sf::Sprite faceSprite = sf::Sprite(faceHappy);
     sf::Sprite debugSprite = sf::Sprite(debug);
     sf::Sprite playTypeSprite = sf::Sprite(play);
-    //sf::Sprite pauseSprite = sf::Sprite(pause);
     sf::Sprite leaderboardSprite = sf::Sprite(leaderboard);
     //sf::Sprite digitSprite = sf::Sprite(digits);
 
     FaceState faceState = FaceState::Happy;
-    PlayType playType = PlayType::Play;
+    PlayType playType = PlayType::Pause;
 
     sf::FloatRect faceBounds;
 
     //Timer
     std::chrono::steady_clock::time_point startTime;
-    std::chrono::duration<float> elapsedTime;
+    std::chrono::steady_clock::time_point pausedStart;
+    std::chrono::duration<float> elapsedTime = std::chrono::seconds(0);
+    std::chrono::duration<float> pausedDuration = std::chrono::seconds(0);
     bool timerRunning = true;
     bool gameOver = false;
-
-    std::chrono::steady_clock::time_point pausedStart;
-    std::chrono::duration<float> pausedDuration = std::chrono::seconds(0);
     bool isPaused = false;
+
+    std::string winnerslist;
 
     //Mines counter
     sf::Texture minesCounter;
     std::vector<sf::Sprite> minesCounterSprite;
 
+    void loadAndSetImages();
     void placeMines();
-    void calculateAdjacentMines();
-    void revealTile(int r, int c);
+    void countAdjacentMines();
+    void showTile(int ir, int ic);
+
     void updateTimer();
-    void togglePlay();
+    void startTimer();
+    void pauseTimer();
+    void resumeTimer();
+
     void resetGame();
+    bool finishGame();
     void setCounter(sf::Sprite& sprite, int digit);
+    int convertToSeconds(std::string& minutesecond);
+    void readLeaderBoard();
+    void updateLeaderboard(std::string name, int gameTime);
 };

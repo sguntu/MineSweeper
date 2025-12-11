@@ -126,7 +126,7 @@ int main() {
                 if (auto* mb = ev->getIf<sf::Event::MouseButtonPressed>()) {
                     game->handleClick(
                         sf::Mouse::getPosition(window),
-                        mb->button, window
+                        mb->button, input
                     );
                 }
             }
