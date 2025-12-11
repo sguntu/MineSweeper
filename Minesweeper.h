@@ -23,9 +23,10 @@ class Minesweeper {
 public:
     Minesweeper(int rows, int cols, int numMines, int tileSize = 32);
 
-    void handleClick(sf::Vector2i mousePos, sf::Mouse::Button button);
+    void handleClick(sf::Vector2i mousePos, sf::Mouse::Button button, sf::RenderWindow& window);
     void draw(sf::RenderWindow& window);
 
+    void displayLeaderboard();
 private:
     int rows;
     int cols;
@@ -35,11 +36,11 @@ private:
     std::vector<std::vector<Tile>> grid;
     sf::Texture texHidden, texRevealed, texMine, texFlag;
     sf::Font font;
-    sf::Texture numberTextures[9];   // index 1–8 used
+    sf::Texture numberTextures[9];
 
     // Face button & state
     sf::Texture faceHappy, faceWin, faceLose;
-    sf::Texture debug, play, pause, leaderboard;//, digits;
+    sf::Texture debug, play, pause, leaderboard;
     sf::Sprite faceSprite = sf::Sprite(faceHappy);
     sf::Sprite debugSprite = sf::Sprite(debug);
     sf::Sprite playTypeSprite = sf::Sprite(play);
@@ -62,20 +63,15 @@ private:
     std::chrono::duration<float> pausedDuration = std::chrono::seconds(0);
     bool isPaused = false;
 
-
     //Mines counter
     sf::Texture minesCounter;
-    //sf::Sprite minesCounterSprite[3];
     std::vector<sf::Sprite> minesCounterSprite;
 
-
     void placeMines();
-    void calculateAdjacency();
+    void calculateAdjacentMines();
     void revealTile(int r, int c);
     void updateTimer();
     void togglePlay();
+    void resetGame();
     void setCounter(sf::Sprite& sprite, int digit);
-
-    //bool isLeaderboardClicked(int mouseX, int mouseY) const;
-    //void displayLeaderboard();
 };

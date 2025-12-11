@@ -3,7 +3,6 @@
 #include <ctime>
 #include <iostream>
 #include <sstream>
-#include <ctime>
 #include <fstream>
 
 #include "GameWindow.h"
@@ -11,9 +10,7 @@
 Minesweeper::Minesweeper(int r, int c, int mines, int tSize)
     : rows(r), cols(c), numMines(mines), tileSize(tSize)
 {
-    //std::vector<Tile>(cols);
     std::cout << "Minesweeper created!" << rows << "x" << cols << std::endl;
-
 
     // Load textures
     if (!texHidden.loadFromFile("../images/tile_hidden.png") ||
@@ -24,23 +21,22 @@ Minesweeper::Minesweeper(int r, int c, int mines, int tSize)
     {
         std::cerr << "Failed to load assets!\n";
     }
-    // Load number textures
+
+    // Number images
     for (int i = 1; i <= 8; i++) {
-       // std::cout << i << std::endl;
         std::string path = "../images/number_" + std::to_string(i) + ".png";
-       // std::cout << path << std::endl;
         if (!numberTextures[i].loadFromFile(path)) {
             std::cout << "Failed to load: " << path << "\n";
         }
     }
 
+    //bottom images
     if (!faceHappy.loadFromFile("../images/face_happy.png"))
         std::cout << "Error loading face_happy.png\n";
     if (!faceLose.loadFromFile("../images/face_lose.png"))
         std::cout << "Error loading face_lose.png\n";
     if (!faceWin.loadFromFile("../images/face_win.png"))
         std::cout << "Error loading face_win.png\n";
-
     if (!debug.loadFromFile("../images/debug.png"))
         std::cout << "Error loading debug.png\n";
     if (!play.loadFromFile("../images/play.png"))
@@ -57,15 +53,12 @@ Minesweeper::Minesweeper(int r, int c, int mines, int tSize)
         minesCounterSprite.emplace_back(minesCounter);
         minesCounterSprite[i].setTextureRect(
         sf::IntRect(sf::Vector2i{21, 0}, sf::Vector2i{21, 32}));
-        //minesCounterSprite[i].setScale(sf::Vector2f(1.f, 1.f));
     }
-
 
     faceSprite = sf::Sprite(faceHappy);
     debugSprite = sf::Sprite(debug);
     playTypeSprite = sf::Sprite(play);
     leaderboardSprite = sf::Sprite(leaderboard);
-    //digitSprite = sf::Sprite(digits);
 
     //Timer
     startTime = std::chrono::steady_clock::now();
@@ -87,7 +80,7 @@ Minesweeper::Minesweeper(int r, int c, int mines, int tSize)
 
     srand(static_cast<unsigned>(time(nullptr)));
     placeMines();
-    calculateAdjacency();
+    calculateAdjacentMines();
 }
 
 void Minesweeper::placeMines() {
@@ -102,17 +95,20 @@ void Minesweeper::placeMines() {
     }
 }
 
-void Minesweeper::calculateAdjacency() {
+void Minesweeper::calculateAdjacentMines() {
     for (int r = 0; r < rows; ++r) {
         for (int c = 0; c < cols; ++c) {
-            if (grid[r][c].isMine) continue;
+            if (grid[r][c].isMine) {
+                continue;
+            }
 
             int count = 0;
             for (int dr = -1; dr <= 1; ++dr)
                 for (int dc = -1; dc <= 1; ++dc) {
                     int nr = r + dr, nc = c + dc;
-                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
                         if (grid[nr][nc].isMine) ++count;
+                    }
                 }
             grid[r][c].adjacentMines = count;
         }
@@ -135,7 +131,7 @@ void Minesweeper::revealTile(int r, int c) {
     }
 }
 
-void Minesweeper::handleClick(sf::Vector2i mousePos, sf::Mouse::Button button) {
+void Minesweeper::handleClick(sf::Vector2i mousePos, sf::Mouse::Button button, sf::RenderWindow& window) {
 
     if (playTypeSprite.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
         isPaused = !isPaused;
@@ -148,6 +144,14 @@ void Minesweeper::handleClick(sf::Vector2i mousePos, sf::Mouse::Button button) {
             playTypeSprite.setTexture(pause);
         }
         return;
+    }
+
+    if (faceSprite.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+        resetGame();
+    }
+
+    if (leaderboardSprite.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+        displayLeaderboard();
     }
 
     const int c = mousePos.x / tileSize;
@@ -188,6 +192,14 @@ void Minesweeper::updateTimer() {
     }
 }
 
+void Minesweeper::resetGame() {
+    placeMines();
+    calculateAdjacentMines();
+    gameOver = false;
+    isPaused = false;
+    timerRunning = false;
+}
+
 void Minesweeper::togglePlay() {
 
 
@@ -201,48 +213,65 @@ void Minesweeper::setCounter(sf::Sprite& sprite, int digit) {
             sf::IntRect(sf::Vector2i{digit * digitWidth, 0}, sf::Vector2i{digitWidth, digitHeight})
         );
 }
-/*
-bool Minesweeper::isLeaderboardClicked(int mouseX, int mouseY) const {
-    const sf::Vector2f pos = leaderboardSprite.getPosition();
-    float leaderx = pos.x;
-    float leadery = pos.y;
-    float leaderw = 64.0f;
-    float leaderh = 64.0f;
-
-    return mouseX >= leaderx && mouseX <= leaderx + leaderw &&
-           mouseY >= leadery && mouseY <= leadery + leaderh;
-}
-
-std::vector<std::pair<std::string, int>> ReadLeaderboard()
-{
-    std::vector<std::pair<std::string, int>> entries;
-    std::ifstream file("../leaderboard.txt");
-    if (!file.is_open()) {
-        std::cerr << "Failed to open leaderboard file\n";
-        return entries;
-    }
-
-    std::string name;
-    int score;
-
-    while (file >> name >> score) {
-        entries.emplace_back(name, score);
-    }
-
-    return entries;
-}
 
 void Minesweeper::displayLeaderboard() {
 
-    auto leaderboard = ReadLeaderboard();
-    unsigned height = numOfRows * 32 + 100;
-    unsigned width  = numOfColumns * 32;
-  //  sf::RenderWindow window(sf::VideoMode({static_cast<unsigned>(width/2.f), static_cast<unsigned>(height/2.f-120.f)}), "Minesweeper");
-    //sf::Text text(font, "LEADER BOARD", 24);
-    //text.setFillColor(sf::Color::White);
-    //setText(text, width / 2.f, height / 2.f - 150);
+    std::ifstream file("../leaderboard.txt");
+    if (!file.is_open()) {
+        std::cerr << "Failed to open leaderboard file\n";
+    }
+
+    std::string players;
+    std::string plist;
+
+    int i = 1;
+    while (std::getline(file, players)) {
+        std::stringstream ss(players);
+        std::string name, score;
+        std::getline(ss, name, ',');
+        std::getline(ss, score);
+        plist += std::to_string(i) + ".\t" + name + "\t" + score +"\n\n";
+        i++;
+    }
+
+    std::cout << plist << std::endl;
+
+    unsigned height = rows * 32 + 100;
+    unsigned width  = cols * 32;
+
+    sf::RenderWindow leaderBoardWindow(
+        sf::VideoMode({static_cast<unsigned>(width/2.f), static_cast<unsigned>(height/2.f)}), "Minesweeper");
+
+    while (leaderBoardWindow.isOpen()) {
+        while (auto ev = leaderBoardWindow.pollEvent()) {
+            if (ev->is<sf::Event::Closed>()) {
+                leaderBoardWindow.close();
+            }
+            if (auto key = ev->getIf<sf::Event::KeyPressed>()) {
+                if (key->code == sf::Keyboard::Key::Escape) {
+                    leaderBoardWindow.close();
+                }
+            }
+        }
+
+        leaderBoardWindow.clear(sf::Color::Blue);
+
+        sf::Text title(font, "LEADER BOARD", 20);
+        title.setFillColor(sf::Color::White);
+        title.setStyle(sf::Text::Bold | sf::Text::Underlined);
+        title.setPosition(sf::Vector2f{width/4.f-80.f, height/8.f-80.f});
+        leaderBoardWindow.draw(title);
+
+        sf::Text scores(font, plist, 18);
+        scores.setFillColor(sf::Color::White);
+        scores.setStyle(sf::Text::Bold);
+        scores.setPosition(sf::Vector2f{width/4.f-100, height/8.f-20});
+        leaderBoardWindow.draw(scores);
+
+        leaderBoardWindow.display();
+    }
 }
-*/
+
 void Minesweeper::draw(sf::RenderWindow& window) {
 
     updateTimer();
@@ -331,4 +360,3 @@ void Minesweeper::draw(sf::RenderWindow& window) {
     }
 
 }
-

@@ -44,10 +44,12 @@ int main() {
 
     sf::Text text(font, "WELCOME TO MINESWEEPER!", 24);
     text.setFillColor(sf::Color::White);
+    text.setStyle(sf::Text::Bold | sf::Text::Underlined);
     setText(text, width / 2.f, height / 2.f - 150);
 
     sf::Text label(font, "Enter your name:", 20);
     label.setFillColor(sf::Color::White);
+    label.setStyle(sf::Text::Bold);
     setText(label, width / 2.f, height / 2.f - 75);
 
     std::string input;
@@ -124,7 +126,7 @@ int main() {
                 if (auto* mb = ev->getIf<sf::Event::MouseButtonPressed>()) {
                     game->handleClick(
                         sf::Mouse::getPosition(window),
-                        mb->button
+                        mb->button, window
                     );
                 }
             }
